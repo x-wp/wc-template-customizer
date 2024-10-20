@@ -293,9 +293,9 @@ abstract class Customizer_Base {
 			return $path;
 		}
 
-        if ( ! static::$locked_templates[ $name ] ) {
-            $path = \locate_template( array( $name, \WC()->template_path() . $name ) );
-        }
+        $path = static::$locked_templates[ $name ] === false
+            ? \locate_template( array( $name, \WC()->template_path() . $name ) )
+            : false;
 
         return $path ?: static::$custom_templates[ $name ];
     }
