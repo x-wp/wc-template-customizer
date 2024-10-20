@@ -50,21 +50,21 @@ abstract class Customizer_Base {
      *   base: string
      * }>
      */
-    protected static array $file_def;
+    protected static array $parsed_templates;
 
     /**
      * Template files array
      *
      * @var array<string, string>
      */
-    protected static array $templates;
+    protected static array $custom_templates;
 
     /**
      * Locked templates array
      *
      * @var array<string>
      */
-	protected static array $locked;
+	protected static array $locked_templates;
 
     /**
      * Admin object
@@ -128,9 +128,9 @@ abstract class Customizer_Base {
         static::$basedirs ??= $this->define_basedirs();
         static::$tokens   ??= $this->define_tokens();
 
-        static::$file_def  ??= $this->define_files();
-        static::$templates ??= $this->define_templates();
-        static::$locked    ??= $this->define_locked();
+        static::$parsed_templates ??= $this->define_files();
+        static::$custom_templates ??= $this->define_templates();
+        static::$locked_templates ??= $this->define_locked();
 
         static::$admin ??= $this->define_admin();
     }
@@ -244,7 +244,7 @@ abstract class Customizer_Base {
      * @return array
      */
     final protected function define_templates(): array {
-        return \wp_list_pluck( static::$file_def, 'path' );
+        return \wp_list_pluck( static::$parsed_templates, 'path' );
     }
 
     /**
@@ -253,7 +253,7 @@ abstract class Customizer_Base {
      * @return array
      */
     final protected function define_locked(): array {
-        return \wp_list_pluck( static::$file_def, 'lock' );
+        return \wp_list_pluck( static::$parsed_templates, 'lock' );
     }
 
     /**
@@ -262,7 +262,7 @@ abstract class Customizer_Base {
      * @return Customizer_Admin|null
      */
     protected function define_admin(): ?Customizer_Admin {
-        return \is_admin() ? new Customizer_Admin( static::$file_def ) : null;
+        return \is_admin() ? new Customizer_Admin( static::$parsed_templates ) : null;
     }
 
     /**
@@ -289,14 +289,14 @@ abstract class Customizer_Base {
      * @return string       Modified template path.
      */
     public function modify_template_path( string $path, string $name ): string {
-		if ( ! isset( static::$templates[ $name ] ) ) {
+		if ( ! isset( static::$custom_templates[ $name ] ) ) {
 			return $path;
 		}
 
-        if ( ! static::$locked[ $name ] ) {
+        if ( ! static::$locked_templates[ $name ] ) {
             $path = \locate_template( array( $name, \WC()->template_path() . $name ) );
         }
 
-        return $path ?: static::$templates[ $name ];
+        return $path ?: static::$custom_templates[ $name ];
     }
 }
